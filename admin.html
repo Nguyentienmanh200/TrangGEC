@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - G-E-C Du Học</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #0a0a1a; color: #f1f5f9; }
+    .sidebar { background: rgba(15,15,35,0.9); backdrop-filter: blur(20px); min-height: 100vh; padding: 20px; }
+    .nav-pills .nav-link { color: #cbd5e1; border-radius: 8px; margin-bottom: 4px; }
+    .nav-pills .nav-link.active, .nav-pills .nav-link:hover { background: rgba(99,102,241,0.3); color: #fff; }
+    .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; }
+    .form-control, .form-select { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; }
+    .form-control:focus { background: rgba(255,255,255,0.1); color: #fff; box-shadow: 0 0 0 0.25rem rgba(99,102,241,0.25); }
+    .btn-primary { background: #6366f1; border: none; }
+    .btn-primary:hover { background: #4f46e5; }
+    .list-group-item { background: transparent; border-color: rgba(255,255,255,0.1); color: #fff; }
+    .token-input { display: flex; gap: 8px; align-items: center; }
+    #gistToken { width: 300px; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+        <h4 class="text-white mb-4"><span style="color:#8B5E3C;">G</span>.<span style="color:#DC2626;">E</span>.<span style="color:#16A34A;">C</span> Admin</h4>
+        <div class="mb-3 token-input">
+          <input type="password" class="form-control form-control-sm" id="gistToken" placeholder="GitHub Token">
+          <button class="btn btn-sm btn-outline-light" id="saveTokenBtn">Lưu</button>
+        </div>
+        <div class="mb-3">
+          <input type="text" class="form-control form-control-sm" id="gistIdInput" placeholder="Gist ID">
+          <button class="btn btn-sm btn-outline-light mt-1" id="saveGistIdBtn">Lưu Gist ID</button>
+        </div>
+        <ul class="nav nav-pills flex-column" id="adminTabs">
+          <li class="nav-item"><a class="nav-link active" data-bs-toggle="pill" href="#tab-countries"><i class="fas fa-globe me-2"></i>Quốc gia</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#tab-scholarships"><i class="fas fa-graduation-cap me-2"></i>Học bổng</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#tab-courses"><i class="fas fa-book me-2"></i>Khóa học</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#tab-posts"><i class="fas fa-newspaper me-2"></i>Tin tức</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#tab-students"><i class="fas fa-user-graduate me-2"></i>Học viên</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#tab-settings"><i class="fas fa-cog me-2"></i>Cài đặt</a></li>
+        </ul>
+        <button class="btn btn-primary w-100 mt-3" id="syncGistBtn"><i class="fas fa-cloud-upload-alt me-2"></i>Đồng bộ lên Gist</button>
+        <div class="mt-2"><button class="btn btn-sm btn-outline-warning w-100" id="exportBtn">Xuất JSON</button></div>
+        <div class="mt-1"><label class="btn btn-sm btn-outline-info w-100"><input type="file" id="importFile" accept=".json" hidden> Nhập JSON</label></div>
+      </nav>
+
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+        <div class="tab-content">
+          <!-- Quốc gia -->
+          <div class="tab-pane fade show active" id="tab-countries">
+            <h3>Quốc gia</h3>
+            <div id="countryList" class="list-group mb-3"></div>
+            <button class="btn btn-primary" id="addCountryBtn"><i class="fas fa-plus"></i> Thêm quốc gia</button>
+            <form id="countryForm" class="card p-3 mt-2 d-none">
+              <input type="hidden" id="countryIndex">
+              <div class="row g-2">
+                <div class="col-md-6"><input class="form-control" placeholder="Tên" id="cName"></div>
+                <div class="col-md-6"><input class="form-control" placeholder="Slug (nhat-ban)" id="cSlug"></div>
+                <div class="col-md-2"><input class="form-control" placeholder="Flag" id="cFlag"></div>
+                <div class="col-md-10"><input class="form-control" placeholder="Link ảnh" id="cImage"></div>
+                <div class="col-12"><textarea class="form-control" rows="2" placeholder="Mô tả" id="cDesc"></textarea></div>
+                <div class="col-md-4"><input class="form-control" placeholder="Điều kiện" id="cCondition"></div>
+                <div class="col-md-4"><input class="form-control" placeholder="Chi phí" id="cCost"></div>
+                <div class="col-md-4"><input class="form-control" placeholder="Học bổng" id="cScholarship"></div>
+                <div class="col-12"><button type="submit" class="btn btn-success">Lưu</button></div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Học bổng -->
+          <div class="tab-pane fade" id="tab-scholarships">
+            <h3>Học bổng</h3>
+            <div id="scholarshipList" class="list-group mb-3"></div>
+            <button class="btn btn-primary" id="addScholarshipBtn"><i class="fas fa-plus"></i> Thêm</button>
+            <form id="scholarshipForm" class="card p-3 mt-2 d-none">
+              <input type="hidden" id="scholarshipIndex">
+              <div class="row g-2">
+                <div class="col-md-6"><input class="form-control" placeholder="Tên" id="sName"></div>
+                <div class="col-md-6"><input class="form-control" placeholder="Quốc gia" id="sCountry"></div>
+                <div class="col-md-4"><input class="form-control" placeholder="Giá trị" id="sValue"></div>
+                <div class="col-md-4"><input class="form-control" placeholder="Hạn" id="sDeadline"></div>
+                <div class="col-12"><button type="submit" class="btn btn-success">Lưu</button></div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Khóa học -->
+          <div class="tab-pane fade" id="tab-courses">
+            <h3>Khóa học</h3>
+            <div id="courseList" class="list-group mb-3"></div>
+            <button class="btn btn-primary" id="addCourseBtn"><i class="fas fa-plus"></i> Thêm</button>
+            <form id="courseForm" class="card p-3 mt-2 d-none">
+              <input type="hidden" id="courseIndex">
+              <div class="row g-2">
+                <div class="col-md-6"><input class="form-control" placeholder="Tên" id="coName"></div>
+                <div class="col-md-3"><input class="form-control" placeholder="Thời gian" id="coDuration"></div>
+                <div class="col-md-3"><input class="form-control" placeholder="Học phí" id="coPrice"></div>
+                <div class="col-12"><button type="submit" class="btn btn-success">Lưu</button></div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Tin tức -->
+          <div class="tab-pane fade" id="tab-posts">
+            <h3>Tin tức</h3>
+            <div id="postList" class="list-group mb-3"></div>
+            <button class="btn btn-primary" id="addPostBtn"><i class="fas fa-plus"></i> Thêm</button>
+            <form id="postForm" class="card p-3 mt-2 d-none">
+              <input type="hidden" id="postIndex">
+              <div class="row g-2">
+                <div class="col-md-8"><input class="form-control" placeholder="Tiêu đề" id="pTitle"></div>
+                <div class="col-md-4"><input class="form-control" placeholder="Ngày" id="pDate"></div>
+                <div class="col-md-6"><input class="form-control" placeholder="Link ảnh" id="pImage"></div>
+                <div class="col-md-6"><input class="form-control" placeholder="Danh mục" id="pCategory"></div>
+                <div class="col-12"><textarea class="form-control" rows="2" placeholder="Tóm tắt" id="pExcerpt"></textarea></div>
+                <div class="col-12"><button type="submit" class="btn btn-success">Lưu</button></div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Học viên -->
+          <div class="tab-pane fade" id="tab-students">
+            <h3>Học viên</h3>
+            <div id="studentList" class="list-group mb-3"></div>
+            <button class="btn btn-primary" id="addStudentBtn"><i class="fas fa-plus"></i> Thêm</button>
+            <form id="studentForm" class="card p-3 mt-2 d-none">
+              <input type="hidden" id="studentIndex">
+              <div class="row g-2">
+                <div class="col-md-6"><input class="form-control" placeholder="Tên" id="stName"></div>
+                <div class="col-md-6"><input class="form-control" placeholder="Quốc gia" id="stCountry"></div>
+                <div class="col-md-8"><input class="form-control" placeholder="Thành tích" id="stAchievement"></div>
+                <div class="col-md-4"><input class="form-control" placeholder="Avatar URL" id="stAvatar"></div>
+                <div class="col-12"><textarea class="form-control" rows="2" placeholder="Trích dẫn" id="stQuote"></textarea></div>
+                <div class="col-12"><button type="submit" class="btn btn-success">Lưu</button></div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Cài đặt chung -->
+          <div class="tab-pane fade" id="tab-settings">
+            <h3>Cài đặt</h3>
+            <div class="card p-4">
+              <h5>Thông tin trung tâm</h5>
+              <div class="row g-2">
+                <div class="col-md-6"><label>Điện thoại</label><input class="form-control" id="setPhone"></div>
+                <div class="col-md-6"><label>Email</label><input class="form-control" id="setEmail"></div>
+                <div class="col-12"><label>Địa chỉ</label><input class="form-control" id="setAddress"></div>
+              </div>
+              <button class="btn btn-primary mt-3" id="saveSettingsBtn">Lưu cài đặt</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ==================== ADMIN LOGIC ====================
+    const defaultData = {
+      countries: [
+        { name: "Nhật Bản", slug: "nhat-ban", flag: "🇯🇵", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600", desc: "...", condition: "N5", cost: "200tr", scholarship: "MEXT" }
+      ],
+      scholarships: [{ name: "MEXT", country: "Nhật Bản", value: "Toàn phần", deadline: "30/06/2026" }],
+      courses: [{ name: "Tiếng Nhật", duration: "6 tháng", price: "12 triệu" }],
+      posts: [{ title: "Bài viết mẫu", excerpt: "...", date: "2026-01-01", image: "", category: "Du học" }],
+      students: [{ name: "Nguyễn A", country: "Nhật", quote: "Tuyệt vời", avatar: "", achievement: "ĐH Tokyo" }],
+      settings: { phone: "1900 123 456", email: "info@gec-duhoc.edu.vn", address: "123 Nguyễn Huệ" }
+    };
+
+    let data = JSON.parse(localStorage.getItem('gec_admin_data')) || defaultData;
+
+    function saveLocal() {
+      localStorage.setItem('gec_admin_data', JSON.stringify(data));
+    }
+
+    function loadFromGist() {
+      const gistId = localStorage.getItem('gec_gist_id');
+      const token = localStorage.getItem('gec_github_token');
+      if (!gistId) return;
+      fetch(`https://api.github.com/gists/${gistId}`, {
+        headers: token ? { Authorization: `token ${token}` } : {}
+      })
+      .then(res => res.json())
+      .then(gist => {
+        if (gist.files && gist.files['site-data.json']) {
+          data = JSON.parse(gist.files['site-data.json'].content);
+          saveLocal();
+          renderAll();
+        }
+      }).catch(() => {});
+    }
+
+    function syncToGist() {
+      const gistId = localStorage.getItem('gec_gist_id');
+      const token = localStorage.getItem('gec_github_token');
+      if (!gistId || !token) return alert('Cần Gist ID và Token!');
+      fetch(`https://api.github.com/gists/${gistId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: { 'site-data.json': { content: JSON.stringify(data, null, 2) } } })
+      }).then(res => res.json()).then(() => alert('Đồng bộ thành công!')).catch(() => alert('Lỗi đồng bộ.'));
+    }
+
+    // Render danh sách
+    function renderList(type) {
+      const listEl = document.getElementById(type + 'List');
+      if (!listEl) return;
+      listEl.innerHTML = data[type].map((item, i) => `
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+          <span>${item.name || item.title || item.name}</span>
+          <div>
+            <button class="btn btn-sm btn-outline-info edit-btn" data-type="${type}" data-index="${i}"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline-danger delete-btn" data-type="${type}" data-index="${i}"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderAll() {
+      renderList('countries');
+      renderList('scholarships');
+      renderList('courses');
+      renderList('posts');
+      renderList('students');
+      document.getElementById('setPhone').value = data.settings.phone;
+      document.getElementById('setEmail').value = data.settings.email;
+      document.getElementById('setAddress').value = data.settings.address;
+    }
+
+    // Xử lý form
+    function showForm(type, index = null) {
+      const form = document.getElementById(type + 'Form');
+      form.classList.remove('d-none');
+      if (index !== null) {
+        form.querySelector('[id$="Index"]').value = index;
+        const item = data[type][index];
+        Object.keys(item).forEach(k => {
+          const el = form.querySelector(`#${type[0]}${k.charAt(0).toUpperCase()+k.slice(1)}`);
+          if (el) el.value = item[k] || '';
+        });
+      } else {
+        form.reset();
+        form.querySelector('[id$="Index"]').value = '';
+      }
+    }
+
+    function saveForm(type, e) {
+      e.preventDefault();
+      const form = e.target;
+      const index = form.querySelector('[id$="Index"]').value;
+      const newItem = {};
+      form.querySelectorAll('input, textarea').forEach(input => {
+        if (input.id && !input.id.includes('Index')) {
+          const key = input.id.replace(/^[a-z]/, m => m.toLowerCase()).replace(/[A-Z]/g, m => '_'+m.toLowerCase());
+          newItem[key] = input.value;
+        }
+      });
+      if (index) {
+        data[type][index] = newItem;
+      } else {
+        data[type].push(newItem);
+      }
+      saveLocal();
+      renderAll();
+      form.classList.add('d-none');
+    }
+
+    // Event listeners
+    document.getElementById('saveTokenBtn').addEventListener('click', () => {
+      localStorage.setItem('gec_github_token', document.getElementById('gistToken').value);
+      alert('Token đã lưu!');
+    });
+    document.getElementById('saveGistIdBtn').addEventListener('click', () => {
+      localStorage.setItem('gec_gist_id', document.getElementById('gistIdInput').value);
+      alert('Gist ID đã lưu!');
+    });
+
+    document.getElementById('syncGistBtn').addEventListener('click', syncToGist);
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'gec-backup.json';
+      a.click();
+    });
+    document.getElementById('importFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        data = JSON.parse(ev.target.result);
+        saveLocal();
+        renderAll();
+        alert('Dữ liệu đã được nhập!');
+      };
+      reader.readAsText(file);
+    });
+
+    // Add buttons
+    document.getElementById('addCountryBtn').addEventListener('click', () => showForm('country'));
+    document.getElementById('addScholarshipBtn').addEventListener('click', () => showForm('scholarship'));
+    document.getElementById('addCourseBtn').addEventListener('click', () => showForm('course'));
+    document.getElementById('addPostBtn').addEventListener('click', () => showForm('post'));
+    document.getElementById('addStudentBtn').addEventListener('click', () => showForm('student'));
+
+    // Form submits
+    document.getElementById('countryForm').addEventListener('submit', e => saveForm('countries', e));
+    document.getElementById('scholarshipForm').addEventListener('submit', e => saveForm('scholarships', e));
+    document.getElementById('courseForm').addEventListener('submit', e => saveForm('courses', e));
+    document.getElementById('postForm').addEventListener('submit', e => saveForm('posts', e));
+    document.getElementById('studentForm').addEventListener('submit', e => saveForm('students', e));
+
+    // Edit & Delete
+    document.body.addEventListener('click', function(e) {
+      if (e.target.closest('.edit-btn')) {
+        const btn = e.target.closest('.edit-btn');
+        const type = btn.dataset.type;
+        const index = parseInt(btn.dataset.index);
+        showForm(type.endsWith('s') ? type : type + 's', index);
+      }
+      if (e.target.closest('.delete-btn')) {
+        const btn = e.target.closest('.delete-btn');
+        const type = btn.dataset.type;
+        const index = parseInt(btn.dataset.index);
+        if (confirm('Xóa?')) {
+          data[type].splice(index, 1);
+          saveLocal();
+          renderAll();
+        }
+      }
+    });
+
+    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+      data.settings.phone = document.getElementById('setPhone').value;
+      data.settings.email = document.getElementById('setEmail').value;
+      data.settings.address = document.getElementById('setAddress').value;
+      saveLocal();
+      alert('Đã lưu cài đặt!');
+    });
+
+    // Khởi tạo
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('gistToken').value = localStorage.getItem('gec_github_token') || '';
+      document.getElementById('gistIdInput').value = localStorage.getItem('gec_gist_id') || '';
+      loadFromGist().then(renderAll);
+    });
+  </script>
+</body>
+</html>
