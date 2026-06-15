@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEC Du Học - Tư vấn du học toàn cầu</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        .transition-smooth {
+            transition: all 0.3s ease;
+        }
+        .admin-panel {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            <div class="text-2xl font-bold text-blue-700">
+                <i class="fas fa-graduation-cap text-blue-600"></i> GEC Du Học
+            </div>
+            <div class="flex space-x-4 md:space-x-6 text-gray-700">
+                <a href="#trang-chu" class="nav-link hover:text-blue-600 font-medium">Trang chủ</a>
+                <a href="#du-hoc" class="nav-link hover:text-blue-600 font-medium">Du học</a>
+                <a href="#bai-viet" class="nav-link hover:text-blue-600 font-medium">Bài viết</a>
+                <a href="#admin" class="nav-link hover:text-blue-600 font-medium"><i class="fas fa-user-shield"></i> Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="app" class="container mx-auto px-4 py-8 min-h-[70vh]">
+        <!-- Nội dung sẽ được render bằng JS -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2025 GEC Du Học - Đồng hành cùng tương lai của bạn</p>
+            <p class="text-gray-400 text-sm mt-2">Hotline: 1900 1234 | Email: info@gecduhoc.edu.vn</p>
+        </div>
+    </footer>
+
+    <script>
+        // -------------------- DỮ LIỆU MẪU (LƯU LOCALSTORAGE) --------------------
+        const STORAGE_KEYS = {
+            COURSES: 'gec_courses',
+            ARTICLES: 'gec_articles'
+        };
+
+        // Dữ liệu mặc định
+        const defaultCourses = [
+            { id: 1, title: "Công nghệ thông tin", country: "Úc", tuition: "25.000 AUD/năm", description: "Chương trình đào tạo hàng đầu tại Úc, cơ hội thực tập tại các tập đoàn công nghệ.", image: "https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?w=400&h=250&fit=crop", featured: true },
+            { id: 2, title: "Quản trị kinh doanh", country: "Canada", tuition: "22.000 CAD/năm", description: "Chương trình kết hợp thực tiễn, định hướng khởi nghiệp.", image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop", featured: true },
+            { id: 3, title: "Kỹ thuật cơ khí", country: "Đức", tuition: "Miễn học phí", description: "Các trường đại học danh tiếng tại Đức với chương trình đào tạo chất lượng cao.", image: "https://images.unsplash.com/photo-1581092335871-4e6c9f4a9f5b?w=400&h=250&fit=crop", featured: true },
+            { id: 4, title: "Ngôn ngữ Anh", country: "Anh Quốc", tuition: "18.000 GBP/năm", description: "Khóa học chuyên sâu về ngôn ngữ và văn hóa Anh.", image: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=250&fit=crop", featured: false },
+            { id: 5, title: "Marketing số", country: "Mỹ", tuition: "30.000 USD/năm", description: "Bắt kịp xu hướng marketing thời đại số.", image: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=400&h=250&fit=crop", featured: false }
+        ];
+
+        const defaultArticles = [
+            { id: 1, title: "Kinh nghiệm xin học bổng du học Úc", content: "Chia sẻ từ các du học sinh thành công. Học bổng toàn phần, bán phần và các lưu ý quan trọng.", date: "2025-03-01", views: 245, image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop" },
+            { id: 2, title: "Top 5 ngành dễ định cư tại Canada", content: "Phân tích các ngành nghề có nhu cầu cao và chính sách định cư mới nhất.", date: "2025-02-20", views: 189, image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=200&fit=crop" },
+            { id: 3, title: "Hướng dẫn làm hồ sơ du học Đức", content: "Chi tiết từ A-Z: APS, visa, tài chính du học.", date: "2025-02-10", views: 312, image: "https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?w=400&h=200&fit=crop" }
+        ];
+
+        // Khởi tạo localStorage nếu chưa có
+        function initData() {
+            if (!localStorage.getItem(STORAGE_KEYS.COURSES)) {
+                localStorage.setItem(STORAGE_KEYS.COURSES, JSON.stringify(defaultCourses));
+            }
+            if (!localStorage.getItem(STORAGE_KEYS.ARTICLES)) {
+                localStorage.setItem(STORAGE_KEYS.ARTICLES, JSON.stringify(defaultArticles));
+            }
+        }
+
+        // Helper: lấy dữ liệu
+        function getCourses() { return JSON.parse(localStorage.getItem(STORAGE_KEYS.COURSES)); }
+        function getArticles() { return JSON.parse(localStorage.getItem(STORAGE_KEYS.ARTICLES)); }
+        function saveCourses(courses) { localStorage.setItem(STORAGE_KEYS.COURSES, JSON.stringify(courses)); }
+        function saveArticles(articles) { localStorage.setItem(STORAGE_KEYS.ARTICLES, JSON.stringify(articles)); }
+
+        // -------------------- QUẢN LÝ TRẠNG THÁI ADMIN --------------------
+        let isAdminLoggedIn = false;
+
+        function checkAdminLogin() {
+            const stored = localStorage.getItem('admin_logged_in');
+            isAdminLoggedIn = stored === 'true';
+            return isAdminLoggedIn;
+        }
+
+        function adminLogin() {
+            localStorage.setItem('admin_logged_in', 'true');
+            isAdminLoggedIn = true;
+            renderPageByHash();
+        }
+
+        function adminLogout() {
+            localStorage.removeItem('admin_logged_in');
+            isAdminLoggedIn = false;
+            renderPageByHash();
+        }
+
+        // -------------------- HÀM RENDER CÁC TRANG --------------------
+        function renderHome() {
+            const courses = getCourses();
+            const featured = courses.filter(c => c.featured).slice(0, 3);
+            return `
+                <div class="space-y-12">
+                    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl text-white p-8 md:p-12 shadow-xl">
+                        <h1 class="text-3xl md:text-5xl font-bold">Chắp cánh ước mơ du học</h1>
+                        <p class="text-lg md:text-xl mt-4 opacity-90">Tư vấn lộ trình học tập và định cư tại hơn 20 quốc gia</p>
+                        <a href="#du-hoc" class="inline-block mt-6 bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Khám phá ngay</a>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold mb-6 border-l-4 border-blue-600 pl-3">🎓 Khóa học nổi bật</h2>
+                        <div class="grid md:grid-cols-3 gap-6">
+                            ${featured.map(course => `
+                                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover transition-smooth">
+                                    ${course.image ? `<img src="${course.image}" class="w-full h-48 object-cover" alt="${course.title}">` : '<div class="h-48 bg-gray-200 flex items-center justify-center"><i class="fas fa-image text-gray-400 text-4xl"></i></div>'}
+                                    <div class="p-5">
+                                        <h3 class="font-bold text-xl">${course.title}</h3>
+                                        <p class="text-gray-500 text-sm mt-1"><i class="fas fa-map-marker-alt"></i> ${course.country}</p>
+                                        <p class="text-gray-600 mt-2">${course.description.substring(0, 80)}...</p>
+                                        <div class="mt-4 flex justify-between items-center">
+                                            <span class="text-blue-600 font-semibold">${course.tuition}</span>
+                                            <a href="#du-hoc" class="text-blue-500 hover:text-blue-700 text-sm">Chi tiết →</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="bg-gray-100 p-6 rounded-xl text-center">
+                        <h2 class="text-2xl font-bold">📢 Tư vấn miễn phí 24/7</h2>
+                        <p class="mt-2">Liên hệ ngay để được hỗ trợ lộ trình du học phù hợp nhất</p>
+                        <button class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700">Gọi ngay: 1900 1234</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStudyAbroad() {
+            const courses = getCourses();
+            const countries = [...new Set(courses.map(c => c.country))];
+            return `
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">🌏 Chương trình du học</h1>
+                    <p class="text-gray-600 mb-6">Khám phá các khóa học tại các quốc gia hàng đầu thế giới</p>
+                    <div class="mb-6 flex flex-wrap gap-2">
+                        <button class="filter-btn bg-blue-600 text-white px-4 py-2 rounded-full text-sm" data-country="all">Tất cả</button>
+                        ${countries.map(c => `<button class="filter-btn bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-full text-sm" data-country="${c}">${c}</button>`).join('')}
+                    </div>
+                    <div id="courses-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${renderCourseCards(courses)}
+                    </div>
+                </div>
+                <script>
+                    document.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const country = this.dataset.country;
+                            const allCourses = ${JSON.stringify(courses)};
+                            let filtered = allCourses;
+                            if(country !== 'all') filtered = allCourses.filter(c => c.country === country);
+                            document.getElementById('courses-list').innerHTML = \`${renderCourseCards(courses).replace(/\$/g, '\\$')}\`;
+                            // Re-attach filter logic? Actually we just re-render, but we need to replace the innerHTML properly.
+                            // For simplicity, re-run filter via JS (will be re-evaluated). But since we are inside a template literal, we need to handle carefully.
+                            // Better to attach a global function.
+                        });
+                    });
+                </script>
+            `;
+        }
+
+        function renderCourseCards(courses) {
+            return courses.map(course => `
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                    ${course.image ? `<img src="${course.image}" class="w-full h-40 object-cover">` : '<div class="h-40 bg-gray-200"></div>'}
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg">${course.title}</h3>
+                        <p class="text-gray-500 text-sm"><i class="fas fa-globe"></i> ${course.country}</p>
+                        <p class="text-gray-600 text-sm mt-1">${course.description.substring(0, 100)}...</p>
+                        <div class="mt-3 flex justify-between items-center">
+                            <span class="text-blue-600 font-bold">${course.tuition}</span>
+                            <button class="text-blue-500 text-sm hover:underline">Xem chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderArticles() {
+            const articles = getArticles();
+            return `
+                <div>
+                    <h1 class="text-3xl font-bold mb-6">📝 Góc tư vấn & kinh nghiệm</h1>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${articles.map(art => `
+                            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                                ${art.image ? `<img src="${art.image}" class="w-full h-44 object-cover">` : '<div class="h-44 bg-gray-200"></div>'}
+                                <div class="p-4">
+                                    <h3 class="font-bold text-xl">${art.title}</h3>
+                                    <div class="flex justify-between text-sm text-gray-500 mt-1">
+                                        <span><i class="far fa-calendar-alt"></i> ${art.date}</span>
+                                        <span><i class="far fa-eye"></i> ${art.views} lượt xem</span>
+                                    </div>
+                                    <p class="mt-3 text-gray-600">${art.content.substring(0, 120)}...</p>
+                                    <button class="mt-3 text-blue-600 font-medium">Đọc tiếp →</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdmin() {
+            if (!isAdminLoggedIn) {
+                return `
+                    <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg mt-10">
+                        <h2 class="text-2xl font-bold text-center mb-6">🔐 Đăng nhập Admin</h2>
+                        <form id="adminLoginForm">
+                            <div class="mb-4">
+                                <label class="block text-gray-700">Email / Tài khoản</label>
+                                <input type="text" id="loginUsername" class="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="admin">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700">Mật khẩu</label>
+                                <input type="password" id="loginPassword" class="w-full border rounded-lg px-3 py-2 mt-1" placeholder="••••••">
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Đăng nhập</button>
+                        </form>
+                        <p class="text-center text-gray-500 text-sm mt-4">(Tài khoản demo: admin / admin)</p>
+                    </div>
+                `;
+            } else {
+                // Admin dashboard: quản lý khóa học + bài viết
+                const courses = getCourses();
+                const articles = getArticles();
+                return `
+                    <div class="admin-panel text-white p-6 rounded-xl mb-8">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-2xl font-bold"><i class="fas fa-cog"></i> Bảng điều khiển</h2>
+                            <button id="logoutBtn" class="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700">Đăng xuất</button>
+                        </div>
+                        <p class="opacity-80 mt-2">Quản lý nội dung khóa học và bài viết</p>
+                    </div>
+
+                    <!-- Quản lý khóa học -->
+                    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-book-open"></i> Khóa học</h3>
+                            <button onclick="showCourseModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-plus"></i> Thêm khóa học</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="py-2 px-4 border">ID</th><th>Tên</th><th>Quốc gia</th><th>Học phí</th><th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminCoursesTable">
+                                    ${courses.map(c => `
+                                        <tr>
+                                            <td class="py-2 px-4 border">${c.id}</td>
+                                            <td class="py-2 px-4 border">${c.title}</td>
+                                            <td class="py-2 px-4 border">${c.country}</td>
+                                            <td class="py-2 px-4 border">${c.tuition}</td>
+                                            <td class="py-2 px-4 border space-x-2">
+                                                <button onclick="editCourse(${c.id})" class="text-blue-600"><i class="fas fa-edit"></i></button>
+                                                <button onclick="deleteCourse(${c.id})" class="text-red-600"><i class="fas fa-trash-alt"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Quản lý bài viết -->
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-newspaper"></i> Bài viết</h3>
+                            <button onclick="showArticleModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-plus"></i> Thêm bài viết</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border">
+                                <thead><tr class="bg-gray-100"><th>ID</th><th>Tiêu đề</th><th>Ngày</th><th>Hành động</th></tr></thead>
+                                <tbody id="adminArticlesTable">
+                                    ${articles.map(a => `
+                                        <tr>
+                                            <td class="py-2 px-4 border">${a.id}</td>
+                                            <td class="py-2 px-4 border">${a.title}</td>
+                                            <td class="py-2 px-4 border">${a.date}</td>
+                                            <td class="py-2 px-4 border space-x-2">
+                                                <button onclick="editArticle(${a.id})" class="text-blue-600"><i class="fas fa-edit"></i></button>
+                                                <button onclick="deleteArticle(${a.id})" class="text-red-600"><i class="fas fa-trash-alt"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Modal thêm/sửa (ẩn ban đầu) -->
+                    <div id="courseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                        <div class="bg-white rounded-lg p-6 w-full max-w-lg">
+                            <h3 id="courseModalTitle" class="text-xl font-bold mb-4">Thêm khóa học</h3>
+                            <form id="courseForm">
+                                <input type="hidden" id="courseId">
+                                <div class="mb-3"><label>Tên khóa học</label><input id="courseTitle" class="w-full border p-2 rounded" required></div>
+                                <div class="mb-3"><label>Quốc gia</label><input id="courseCountry" class="w-full border p-2 rounded" required></div>
+                                <div class="mb-3"><label>Học phí</label><input id="courseTuition" class="w-full border p-2 rounded" required></div>
+                                <div class="mb-3"><label>Mô tả</label><textarea id="courseDesc" class="w-full border p-2 rounded" rows="3"></textarea></div>
+                                <div class="mb-3"><label>URL hình ảnh</label><input id="courseImage" class="w-full border p-2 rounded" placeholder="https://..."></div>
+                                <div class="flex justify-end space-x-2">
+                                    <button type="button" onclick="closeCourseModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Hủy</button>
+                                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Lưu</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div id="articleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                        <div class="bg-white rounded-lg p-6 w-full max-w-lg">
+                            <h3 id="articleModalTitle" class="text-xl font-bold mb-4">Thêm bài viết</h3>
+                            <form id="articleForm">
+                                <input type="hidden" id="articleId">
+                                <div class="mb-3"><label>Tiêu đề</label><input id="articleTitle" class="w-full border p-2 rounded" required></div>
+                                <div class="mb-3"><label>Nội dung tóm tắt</label><textarea id="articleContent" class="w-full border p-2 rounded" rows="3" required></textarea></div>
+                                <div class="mb-3"><label>Ngày (YYYY-MM-DD)</label><input id="articleDate" type="date" class="w-full border p-2 rounded" required></div>
+                                <div class="mb-3"><label>URL hình ảnh</label><input id="articleImage" class="w-full border p-2 rounded"></div>
+                                <div class="flex justify-end space-x-2">
+                                    <button type="button" onclick="closeArticleModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Hủy</button>
+                                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Lưu</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Hàm chính render theo hash
+        function renderPageByHash() {
+            const hash = window.location.hash.slice(1) || 'trang-chu';
+            const app = document.getElementById('app');
+            let content = '';
+            if (hash === 'trang-chu') content = renderHome();
+            else if (hash === 'du-hoc') content = renderStudyAbroad();
+            else if (hash === 'bai-viet') content = renderArticles();
+            else if (hash === 'admin') content = renderAdmin();
+            else content = '<div class="text-center py-20"><h2>Không tìm thấy trang</h2></div>';
+            app.innerHTML = content;
+            // Thêm sự kiện cho admin login form nếu cần
+            if (hash === 'admin' && !isAdminLoggedIn) {
+                const form = document.getElementById('adminLoginForm');
+                if (form) {
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        const username = document.getElementById('loginUsername').value;
+                        const password = document.getElementById('loginPassword').value;
+                        if (username === 'admin' && password === 'admin') {
+                            adminLogin();
+                        } else {
+                            alert('Sai tài khoản hoặc mật khẩu');
+                        }
+                    });
+                }
+            }
+            if (hash === 'admin' && isAdminLoggedIn) {
+                // Gắn các hàm xử lý admin (cần định nghĩa global)
+                window.showCourseModal = showCourseModal;
+                window.closeCourseModal = closeCourseModal;
+                window.editCourse = editCourse;
+                window.deleteCourse = deleteCourse;
+                window.showArticleModal = showArticleModal;
+                window.closeArticleModal = closeArticleModal;
+                window.editArticle = editArticle;
+                window.deleteArticle = deleteArticle;
+                document.getElementById('logoutBtn')?.addEventListener('click', adminLogout);
+                // Xử lý form thêm/sửa khóa học
+                const courseForm = document.getElementById('courseForm');
+                if (courseForm) {
+                    courseForm.onsubmit = (e) => {
+                        e.preventDefault();
+                        saveCourseFromModal();
+                    };
+                }
+                const articleForm = document.getElementById('articleForm');
+                if (articleForm) {
+                    articleForm.onsubmit = (e) => {
+                        e.preventDefault();
+                        saveArticleFromModal();
+                    };
+                }
+            }
+        }
+
+        // Các hàm CRUD cho admin
+        function showCourseModal(editId = null) {
+            document.getElementById('courseModal').classList.remove('hidden');
+            document.getElementById('courseModal').classList.add('flex');
+            if (editId) {
+                const course = getCourses().find(c => c.id == editId);
+                if (course) {
+                    document.getElementById('courseModalTitle').innerText = 'Sửa khóa học';
+                    document.getElementById('courseId').value = course.id;
+                    document.getElementById('courseTitle').value = course.title;
+                    document.getElementById('courseCountry').value = course.country;
+                    document.getElementById('courseTuition').value = course.tuition;
+                    document.getElementById('courseDesc').value = course.description;
+                    document.getElementById('courseImage').value = course.image || '';
+                }
+            } else {
+                document.getElementById('courseModalTitle').innerText = 'Thêm khóa học';
+                document.getElementById('courseForm').reset();
+                document.getElementById('courseId').value = '';
+            }
+        }
+        function closeCourseModal() {
+            document.getElementById('courseModal').classList.add('hidden');
+            document.getElementById('courseModal').classList.remove('flex');
+        }
+        function saveCourseFromModal() {
+            const id = document.getElementById('courseId').value;
+            const courses = getCourses();
+            const newCourse = {
+                id: id ? parseInt(id) : Date.now(),
+                title: document.getElementById('courseTitle').value,
+                country: document.getElementById('courseCountry').value,
+                tuition: document.getElementById('courseTuition').value,
+                description: document.getElementById('courseDesc').value,
+                image: document.getElementById('courseImage').value,
+                featured: false
+            };
+            if (id) {
+                const index = courses.findIndex(c => c.id == id);
+                if (index !== -1) courses[index] = newCourse;
+            } else {
+                courses.push(newCourse);
+            }
+            saveCourses(courses);
+            closeCourseModal();
+            renderPageByHash(); // refresh admin
+        }
+        function deleteCourse(id) {
+            if (confirm('Xóa khóa học này?')) {
+                let courses = getCourses();
+                courses = courses.filter(c => c.id != id);
+                saveCourses(courses);
+                renderPageByHash();
+            }
+        }
+        function editCourse(id) {
+            showCourseModal(id);
+        }
+
+        // Article CRUD tương tự
+        function showArticleModal(editId = null) {
+            document.getElementById('articleModal').classList.remove('hidden');
+            document.getElementById('articleModal').classList.add('flex');
+            if (editId) {
+                const article = getArticles().find(a => a.id == editId);
+                if (article) {
+                    document.getElementById('articleModalTitle').innerText = 'Sửa bài viết';
+                    document.getElementById('articleId').value = article.id;
+                    document.getElementById('articleTitle').value = article.title;
+                    document.getElementById('articleContent').value = article.content;
+                    document.getElementById('articleDate').value = article.date;
+                    document.getElementById('articleImage').value = article.image || '';
+                }
+            } else {
+                document.getElementById('articleModalTitle').innerText = 'Thêm bài viết';
+                document.getElementById('articleForm').reset();
+                document.getElementById('articleId').value = '';
+                document.getElementById('articleDate').value = new Date().toISOString().slice(0,10);
+            }
+        }
+        function closeArticleModal() {
+            document.getElementById('articleModal').classList.add('hidden');
+            document.getElementById('articleModal').classList.remove('flex');
+        }
+        function saveArticleFromModal() {
+            const id = document.getElementById('articleId').value;
+            const articles = getArticles();
+            const newArticle = {
+                id: id ? parseInt(id) : Date.now(),
+                title: document.getElementById('articleTitle').value,
+                content: document.getElementById('articleContent').value,
+                date: document.getElementById('articleDate').value,
+                image: document.getElementById('articleImage').value,
+                views: 0
+            };
+            if (id) {
+                const index = articles.findIndex(a => a.id == id);
+                if (index !== -1) articles[index] = newArticle;
+            } else {
+                articles.push(newArticle);
+            }
+            saveArticles(articles);
+            closeArticleModal();
+            renderPageByHash();
+        }
+        function deleteArticle(id) {
+            if (confirm('Xóa bài viết này?')) {
+                let articles = getArticles();
+                articles = articles.filter(a => a.id != id);
+                saveArticles(articles);
+                renderPageByHash();
+            }
+        }
+        function editArticle(id) {
+            showArticleModal(id);
+        }
+
+        // Lắng nghe hash change
+        window.addEventListener('hashchange', renderPageByHash);
+        window.addEventListener('load', () => {
+            initData();
+            checkAdminLogin();
+            renderPageByHash();
+        });
+    </script>
+</body>
+</html>
